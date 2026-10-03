@@ -1,9 +1,4 @@
-/* ==========================================================================
-   MINI E-COMMERCE VANILLA JAVASCRIPT APPLICATION
-   Uses Standard Browser Fetch API for REST Endpoints
-   ========================================================================== */
 
-// Global Application State
 let currentProducts = [];
 let categoriesList = ['All'];
 let cartData = { items: [], subtotal: 0, tax: 0, shippingFee: 0, total: 0, itemCount: 0 };
@@ -13,8 +8,6 @@ let currentSearchTerm = '';
 let currentSort = 'newest';
 let selectedProductForDetail = null;
 let detailQuantity = 1;
-
-// Session ID for Guest Cart Persistence
 const getSessionId = () => {
   let sId = localStorage.getItem('ecom_session_id');
   if (!sId) {
@@ -23,8 +16,6 @@ const getSessionId = () => {
   }
   return sId;
 };
-
-// Generic Fetch API Wrapper Helper Function
 async function fetchAPI(endpoint, options = {}) {
   const token = localStorage.getItem('ecom_token');
   const headers = {
@@ -50,18 +41,9 @@ async function fetchAPI(endpoint, options = {}) {
     throw err;
   }
 }
-
-// --------------------------------------------------------------------------
-// 1. INITIALIZATION & SETUP
-// --------------------------------------------------------------------------
-
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('App starting... Initializing FreshCart frontend...');
-  
-  // Attach event listeners
   setupEventListeners();
-
-  // Load initial profile, categories, products, and cart
   await checkCurrentUser();
   await loadCategories();
   await loadProducts();
@@ -69,18 +51,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function setupEventListeners() {
-  // Brand Logo Reset
   document.getElementById('brand-logo-btn').addEventListener('click', () => {
     selectedCategory = 'All';
     currentSearchTerm = '';
     document.getElementById('search-input').value = '';
     loadProducts();
   });
-
-  // Search Input Handler
   const searchInput = document.getElementById('search-input');
   const clearSearchBtn = document.getElementById('clear-search-btn');
-
   searchInput.addEventListener('input', (e) => {
     currentSearchTerm = e.target.value.trim();
     if (currentSearchTerm) {
@@ -97,14 +75,10 @@ function setupEventListeners() {
     clearSearchBtn.classList.add('hidden');
     loadProducts();
   });
-
-  // Sort Dropdown Selector
   document.getElementById('sort-select').addEventListener('change', (e) => {
     currentSort = e.target.value;
     loadProducts();
   });
-
-  // Reset Filters Button
   document.getElementById('reset-filters-btn').addEventListener('click', () => {
     selectedCategory = 'All';
     currentSearchTerm = '';
@@ -112,23 +86,16 @@ function setupEventListeners() {
     clearSearchBtn.classList.add('hidden');
     loadProducts();
   });
-
-  // Open Cart Drawer Button
   document.getElementById('open-cart-btn').addEventListener('click', () => {
     loadCart();
     openModal('cart-drawer-modal');
   });
-
-  // Clear Cart Button
   document.getElementById('clear-cart-btn').addEventListener('click', handleClearCart);
-
-  // Proceed to Checkout Button
   document.getElementById('proceed-checkout-btn').addEventListener('click', () => {
     closeModal('cart-drawer-modal');
     openCheckoutModal();
   });
 
-  // Checkout Form Submission
   document.getElementById('checkout-form').addEventListener('submit', handleCheckoutSubmit);
 
   // Auth Button (Login / Register Modal)
@@ -170,11 +137,6 @@ function setupEventListeners() {
     }
   });
 }
-
-// --------------------------------------------------------------------------
-// 2. PRODUCT BROWSING, SEARCH, FILTER, AND SORT (Fetch API Endpoints)
-// --------------------------------------------------------------------------
-
 async function loadCategories() {
   try {
     categoriesList = await fetchAPI('/api/categories');
@@ -297,11 +259,6 @@ function openProductDetail(productId) {
 
   openModal('product-detail-modal');
 }
-
-// --------------------------------------------------------------------------
-// 3. CART MANAGEMENT APIs (Add, Update, Remove, Calculate Subtotal/Total)
-// --------------------------------------------------------------------------
-
 async function loadCart() {
   try {
     cartData = await fetchAPI('/api/cart');
@@ -408,11 +365,6 @@ async function handleClearCart() {
     showToast('Failed to clear cart');
   }
 }
-
-// --------------------------------------------------------------------------
-// 4. CHECKOUT FORM & STOCK VALIDATION & PLACE ORDER
-// --------------------------------------------------------------------------
-
 function openCheckoutModal() {
   if (!cartData.items || cartData.items.length === 0) {
     showToast('Your cart is empty');
@@ -501,300 +453,4 @@ function showOrderSuccessReceipt(orderResult) {
   openModal('order-success-modal');
 }
 
-// --------------------------------------------------------------------------
-// 5. USER AUTHENTICATION & JWT (Login, Register, Admin Role)
-// --------------------------------------------------------------------------
-
-async function checkCurrentUser() {
-  const token = localStorage.getItem('ecom_token');
-  if (!token) {
-    updateUserUI(null);
-    return;
-  }
-  try {
-    const res = await fetchAPI('/api/auth/me');
-    currentUser = res.user;
-    updateUserUI(currentUser);
-  } catch (err) {
-    localStorage.removeItem('ecom_token');
-    updateUserUI(null);
-  }
-}
-
-function updateUserUI(user) {
-  const profileSection = document.getElementById('user-profile-section');
-  const adminBtn = document.getElementById('admin-panel-btn');
-
-  if (user) {
-    profileSection.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.35rem 0.85rem; border-radius: 9999px;">
-        <span style="width: 28px; height: 28px; background: #16a34a; color: white; border-radius: 9999px; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">
-          ${user.name.charAt(0).toUpperCase()}
-        </span>
-        <span style="font-size: 0.8rem; font-weight: 700;">${user.name}</span>
-        <button onclick="handleLogout()" style="background: none; border: none; color: #ef4444; cursor: pointer; margin-left: 0.3rem;" title="Logout">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
-      </div>
-    `;
-    if (user.role === 'admin') {
-      adminBtn.classList.remove('hidden');
-    } else {
-      adminBtn.classList.add('hidden');
-    }
-  } else {
-    profileSection.innerHTML = `
-      <button id="open-auth-btn" class="btn btn-outline-green" onclick="openModal('auth-modal')">
-        <i class="fa-solid fa-user"></i>
-        <span>Login / Register</span>
-      </button>
-    `;
-    adminBtn.classList.add('hidden');
-  }
-}
-
-async function handleLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-
-  try {
-    const data = await fetchAPI('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    });
-    localStorage.setItem('ecom_token', data.token);
-    currentUser = data.user;
-    updateUserUI(currentUser);
-    closeModal('auth-modal');
-    showToast(`Welcome back, ${currentUser.name}!`);
-    await loadCart();
-  } catch (err) {
-    alert(err.message || 'Login failed');
-  }
-}
-
-async function handleRegister(e) {
-  e.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
-
-  try {
-    const data = await fetchAPI('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ name, email, password })
-    });
-    localStorage.setItem('ecom_token', data.token);
-    currentUser = data.user;
-    updateUserUI(currentUser);
-    closeModal('auth-modal');
-    showToast('Account registered successfully!');
-  } catch (err) {
-    alert(err.message || 'Registration failed');
-  }
-}
-
-function handleLogout() {
-  localStorage.removeItem('ecom_token');
-  currentUser = null;
-  updateUserUI(null);
-  showToast('Logged out');
-}
-
-function switchAuthTab(tab) {
-  const loginForm = document.getElementById('login-form');
-  const regForm = document.getElementById('register-form');
-  const tabLogin = document.getElementById('tab-login-btn');
-  const tabReg = document.getElementById('tab-register-btn');
-
-  if (tab === 'login') {
-    loginForm.classList.remove('hidden');
-    regForm.classList.add('hidden');
-    tabLogin.classList.add('active');
-    tabReg.classList.remove('active');
-  } else {
-    loginForm.classList.add('hidden');
-    regForm.classList.remove('hidden');
-    tabLogin.classList.remove('active');
-    tabReg.classList.add('active');
-  }
-}
-
-function fillDemoLogin(email, password) {
-  switchAuthTab('login');
-  document.getElementById('login-email').value = email;
-  document.getElementById('login-password').value = password;
-}
-
-// --------------------------------------------------------------------------
-// 6. ADMIN DASHBOARD PANEL (Add/Edit Products, Manage Order Status)
-// --------------------------------------------------------------------------
-
-async function loadAdminData() {
-  await loadAdminProducts();
-  await loadAdminOrders();
-}
-
-async function loadAdminProducts() {
-  try {
-    const products = await fetchAPI('/api/products');
-    const tbody = document.getElementById('admin-products-tbody');
-    tbody.innerHTML = '';
-
-    products.forEach(p => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${p.id}</td>
-        <td><img src="${p.image_url}" style="width: 36px; height: 36px; border-radius: 6px; object-fit: cover;"></td>
-        <td><strong>${p.name}</strong></td>
-        <td>${p.category}</td>
-        <td>$${p.price.toFixed(2)}</td>
-        <td>
-          <input type="number" value="${p.stock}" style="width: 60px; padding: 2px 4px; font-weight: bold;" onchange="updateAdminStock(${p.id}, this.value)">
-        </td>
-        <td>
-          <button onclick="deleteAdminProduct(${p.id})" style="color: #ef4444; border: none; background: none; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    console.error('Error loading admin products', err);
-  }
-}
-
-async function handleAddProductSubmit(e) {
-  e.preventDefault();
-  const name = document.getElementById('admin-p-name').value;
-  const price = document.getElementById('admin-p-price').value;
-  const category = document.getElementById('admin-p-cat').value;
-  const stock = document.getElementById('admin-p-stock').value;
-  const image_url = document.getElementById('admin-p-img').value;
-  const description = document.getElementById('admin-p-desc').value;
-
-  try {
-    await fetchAPI('/api/products', {
-      method: 'POST',
-      body: JSON.stringify({ name, price, category, stock, image_url, description })
-    });
-    showToast('New product created!');
-    document.getElementById('add-product-form').reset();
-    await loadAdminProducts();
-    await loadProducts();
-    await loadCategories();
-  } catch (err) {
-    alert(err.message || 'Failed to add product');
-  }
-}
-
-async function updateAdminStock(id, newStock) {
-  try {
-    await fetchAPI(`/api/products/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ stock: parseInt(newStock, 10) })
-    });
-    showToast('Stock updated!');
-    await loadProducts();
-  } catch (err) {
-    alert('Failed to update stock');
-  }
-}
-
-async function deleteAdminProduct(id) {
-  if (!confirm('Are you sure you want to delete this product?')) return;
-  try {
-    await fetchAPI(`/api/products/${id}`, { method: 'DELETE' });
-    showToast('Product deleted');
-    await loadAdminProducts();
-    await loadProducts();
-  } catch (err) {
-    alert('Failed to delete product');
-  }
-}
-
-async function loadAdminOrders() {
-  try {
-    const orders = await fetchAPI('/api/orders');
-    const tbody = document.getElementById('admin-orders-tbody');
-    tbody.innerHTML = '';
-
-    orders.forEach(o => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong style="font-family: monospace;">${o.order_code}</strong></td>
-        <td>${o.customer_name}</td>
-        <td>${o.customer_phone}</td>
-        <td><strong>$${o.total.toFixed(2)}</strong></td>
-        <td><span style="font-weight: 800; color: #16a34a;">${o.status.toUpperCase()}</span></td>
-        <td>
-          <select onchange="updateOrderStatus(${o.id}, this.value)" style="padding: 2px 6px; font-size: 0.75rem;">
-            <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
-            <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Processing</option>
-            <option value="shipped" ${o.status === 'shipped' ? 'selected' : ''}>Shipped</option>
-            <option value="delivered" ${o.status === 'delivered' ? 'selected' : ''}>Delivered</option>
-            <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-          </select>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    console.error('Failed to load admin orders', err);
-  }
-}
-
-async function updateOrderStatus(orderId, status) {
-  try {
-    await fetchAPI(`/api/orders/${orderId}/status`, {
-      method: 'PUT',
-      body: JSON.stringify({ status })
-    });
-    showToast('Order status updated');
-    await loadAdminOrders();
-  } catch (err) {
-    alert('Failed to update order status');
-  }
-}
-
-function switchAdminTab(tab) {
-  const prodSec = document.getElementById('admin-section-products');
-  const ordSec = document.getElementById('admin-section-orders');
-  const tabP = document.getElementById('admin-tab-products');
-  const tabO = document.getElementById('admin-tab-orders');
-
-  if (tab === 'products') {
-    prodSec.classList.remove('hidden');
-    ordSec.classList.add('hidden');
-    tabP.classList.add('active');
-    tabO.classList.remove('active');
-  } else {
-    prodSec.classList.add('hidden');
-    ordSec.classList.remove('hidden');
-    tabP.classList.remove('active');
-    tabO.classList.add('active');
-  }
-}
-
-// --------------------------------------------------------------------------
-// 7. UTILITY HELPERS (Modal Open/Close & Toast)
-// --------------------------------------------------------------------------
-
-function openModal(id) {
-  document.getElementById(id).classList.remove('hidden');
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.add('hidden');
-}
-
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  const toastMsg = document.getElementById('toast-message');
-  toastMsg.innerText = message;
-  toast.classList.remove('hidden');
-
-  setTimeout(() => {
-    toast.classList.add('hidden');
-  }, 3000);
-}
+  

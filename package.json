@@ -1,0 +1,19 @@
+{
+  "name": "mini-ecommerce",
+  "version": "1.0.0",
+  "description": "Mini E-Commerce Application with HTML, CSS, Vanilla JS, Express, SQLite, and Fetch API",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreshCart E-Commerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <header class="site-header">
+    <div class="header-container">
+      <div class="brand-logo" id="brand-logo">
+        <div class="logo-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+        <span class="brand-title">Fresh<span class="green-text">Cart</span></span>
+      </div>
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="search-input" placeholder="Search products by name...">
+      </div>
+
+      <div class="header-actions">
+        <button id="open-cart-btn" class="btn btn-green">
+          <i class="fa-solid fa-bag-shopping"></i> Cart <span id="cart-badge" class="cart-badge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="controls-bar">
+      <div id="categories-box" class="categories-filter"></div>
+      <div>
+        <select id="sort-select">
+          <option value="newest">Featured / Newest</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="name">Name (A-Z)</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="product-grid" class="product-grid"></div>
+  </main>
+
+  <div id="detail-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal('detail-modal')"><i class="fa-solid fa-xmark"></i></button>
+      <img id="d-img" style="width:100%;height:200px;object-fit:cover;border-radius:0.75rem;margin-bottom:1rem;">
+      <h2 id="d-title"></h2>
+      <div id="d-price" style="font-size:1.5rem;font-weight:800;color:#16a34a;margin:0.5rem 0;"></div>
+      <p id="d-desc" style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;"></p>
+      <button id="d-add-btn" class="btn btn-green btn-full">Add to Cart</button>
+    </div>
+  </div>
+
+  <div id="cart-modal" class="modal-backdrop hidden">
+    <div class="cart-drawer">
+      <div class="drawer-header">
+        <h3><i class="fa-solid fa-bag-shopping green-text"></i> Shopping Cart</h3>
+        <button class="modal-close" onclick="closeModal('cart-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="cart-items" class="cart-items-list"></div>
+      <div class="cart-footer">
+        <div class="summary-line"><span>Subtotal</span><span id="c-subtotal">$0.00</span></div>
+        <div class="summary-line"><span>Tax (8%)</span><span id="c-tax">$0.00</span></div>
+        <div class="summary-line"><span>Shipping</span><span id="c-shipping">FREE</span></div>
+        <div class="summary-line total-line"><span>Total</span><span id="c-total">$0.00</span></div>
+        <button id="proceed-btn" class="btn btn-green btn-full" style="margin-top:0.75rem;">Proceed to Checkout</button>
+        <button id="clear-cart-btn" style="background:none;border:none;color:#ef4444;font-size:0.75rem;cursor:pointer;margin-top:0.5rem;">Clear Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="checkout-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal('checkout-modal')"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="margin-bottom:1rem;"><i class="fa-solid fa-credit-card green-text"></i> Delivery Checkout Form</h3>
+      <form id="checkout-form">
+        <div class="form-group"><label>Full Name *</label><input type="text" id="cust-name" placeholder="Sarah Jenkins" required></div>
+        <div class="form-group"><label>Email Address *</label><input type="email" id="cust-email" placeholder="sarah@example.com" required></div>
+        <div class="form-group"><label>Phone Number *</label><input type="tel" id="cust-phone" placeholder="+1 555-0192" required></div>
+        <div class="form-group"><label>Shipping Address *</label><textarea id="cust-address" rows="2" placeholder="123 Street Name, City, State" required></textarea></div>
+        <div style="font-weight:800;margin:0.5rem 0;">Total Amount: <span id="chk-total" class="green-text">$0.00</span></div>
+        <button type="submit" class="btn btn-green btn-full">Validate Stock & Place Order</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="receipt-modal" class="modal-backdrop hidden">
+    <div class="modal-card" style="text-align:center;">
+      <i class="fa-solid fa-circle-check" style="font-size:3rem;color:#16a34a;margin-bottom:0.5rem;"></i>
+      <h2>Order Placed Successfully!</h2>
+      <p style="font-size:0.85rem;color:#64748b;margin-bottom:0.5rem;">Official Order ID: <strong id="receipt-code" class="green-text"></strong></p>
+      <div style="font-size:1.1rem;font-weight:800;margin-bottom:1rem;">Total Paid: <span id="receipt-total" class="green-text"></span></div>
+      <button onclick="closeModal('receipt-modal')" class="btn btn-green btn-full">Continue Shopping</button>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
